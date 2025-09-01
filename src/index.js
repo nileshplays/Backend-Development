@@ -1,6 +1,7 @@
 // import mongoose from "mongoose";
 import { DB_NAME } from "./constants.js";
-// import express from "express"
+import express from "express";
+import { app } from "./app.js";
 
 import dotenv from "dotenv";
 import connectDB from "./db/dbConnect.js"
@@ -8,6 +9,8 @@ import connectDB from "./db/dbConnect.js"
 dotenv.config({
     path: "./.env"
 });
+
+// const app = express();     as we have already imported app
 
 connectDB()
 .then(()=> {
