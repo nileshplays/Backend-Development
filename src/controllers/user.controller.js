@@ -31,17 +31,22 @@ const registerUser = asyncHandler( async (req , res) => {
     }
 
     //3. Check if user already exits  :: username or  email
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [ { username } , { email }]
     })
 
     if(existedUser){
-        throw new ApiError(405 , "User with this email or username already exists !")
+        throw new ApiError(409 , "User with this email or username already exists !")
     }
 
     //4. Check for images , Check for avatar
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path;
+    }
+
     if(!avatarLocalPath){
         throw new ApiError(400 , "Avatar field is required !");
     }
@@ -75,9 +80,8 @@ const registerUser = asyncHandler( async (req , res) => {
 
     //9. Return response
     return res.status(201).json(
-        new ApiResponse(200, createdUser, "User Registered Successfully !")
+        new ApiResponse(201, createdUser, "User Registered Successfully !")
     )
-
-});
+})
 
 export {registerUser};
