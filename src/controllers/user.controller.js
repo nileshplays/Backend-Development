@@ -110,7 +110,7 @@ const loginUser = asyncHandler( async (req, res) => {
 
   const {username, email , password} = req.body
 
-  if(!username || !email){
+  if(!username && !email){
     throw new ApiError(404,"Either of username or email is required !!");
   }
 
@@ -129,12 +129,12 @@ const loginUser = asyncHandler( async (req, res) => {
 
   const {accessToken , refreshToken} = await generateAccessAndRefreshTokens(user._id);
 
-  const loggedInUser = await User.findById(user._id).select("-password , -refreshToken" )
+  const loggedInUser = await User.findById(user._id).select("-password  -refreshToken" )
 
   // for cookie
   const options = {
     httpOnly : true,
-    secure : true
+    // secure : true
   }
 
   return res
@@ -165,7 +165,7 @@ const logoutUser = asyncHandler( async(req, res) => {
     )
     const options = {
         httpOnly : true,
-        secure : true
+        // secure : true
     }
 
     return res
