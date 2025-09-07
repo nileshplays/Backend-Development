@@ -333,6 +333,76 @@ const updateCoverImage = asyncHandler (async (req, res ) => {
     .json( new ApiResponse(200, user, "Cover Image updated successfully"))
 })
 
+const getUserChannelProfile = asyncHandler( async ( req, res) => {
+    const {username} = req.params
+    if(!username?.trim()){
+        throw new ApiError(400, "User not found !")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username : username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {
+                from: "subscription",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscription",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscriberCount: {
+                    $size: "$subscribers"
+                },
+                channelsSubscribedToCount: {
+                    $size: "subscribedTo"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+
+        {
+            $project: {
+                fullName : 1,
+                username : 1,
+                email : 1,
+                subscriberCount : 1,
+                channelsSubscribedToCount : 1,
+                isSubscribed: 1,
+                avatar : 1,
+                coverImage : 1
+            }
+        }
+    ])
+
+    if( !channel?.lenght ){
+        throw new ApiError(401 , "Channel does not exists !!")
+    }
+
+    return res
+    .status(200)
+    .json( new ApiResponse(200, channel[0], "User Channel fetched Successfully."))
+});
+
+
 export {registerUser ,
         loginUser,
         logoutUser,
