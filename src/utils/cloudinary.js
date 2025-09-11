@@ -69,7 +69,7 @@ const uploadOnCloudinary = async (localFilePath) => {
       return null;
     }
 
-    console.log("📤 Uploading to Cloudinary:", localFilePath);
+    // console.log("📤 Uploading to Cloudinary:", localFilePath);
 
     // Upload the file
     const response = await cloudinary.uploader.upload(localFilePath, {
@@ -100,6 +100,16 @@ const uploadOnCloudinary = async (localFilePath) => {
 
     return null;
   }
+};
+
+// ✅ delete helper
+export const deleteFromCloudinary = async (publicId) => {
+    if (!publicId) return;
+    try {
+        await cloudinary.uploader.destroy(publicId);
+    } catch (err) {
+        console.error("Cloudinary delete error:", err);
+    }
 };
 
 export { uploadOnCloudinary };
