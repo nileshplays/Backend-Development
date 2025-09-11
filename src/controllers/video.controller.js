@@ -10,7 +10,56 @@ import {uploadOnCloudinary , deleteFromCloudinary} from "../utils/cloudinary.js"
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
-})
+
+    // 1.Build Filter Object
+    const filter = {}
+
+    if( query ) {
+        filter.$or = [
+            {
+                title : {regex : query, $options : "i"}     // search in the title for the query word in whole document 
+            },
+            {
+                description : {regex : query, $options : "i"}     // "i" case insensitive search  
+            }
+        ];
+    }
+
+    if( userId ){
+        filter.owner = userId;
+    }
+
+    // 2. Build Sort Object
+    const sortOptions = {}
+    sortOptions[ sortBy] = sortType === "asc" ? 1 : -1
+
+    // 3.Fetch Videos with Pagination
+    const videos = await Video.find(filter)
+        .sort(sortOptions)
+        .skip((page - 1) * limit)
+        .limit(Number(limit))
+        .populate("owner", "username email")   // include user details not just the video ID
+
+    // 4. Get Total Count for Pagination metadata
+    const totalVideos = await Video.countDocuments(filter)
+
+    // 5. Return response
+    return res
+        .status(200)
+        .json( new ApiResponse(200, 
+            {
+                videos,
+                pagination: {
+                    totalVideos,
+                    currentPage : Number(page),
+                    totalPages : Math.ceil(totalVideos / limit),
+                    pageSize : Number(limit)
+                }
+            },
+            " Video Fetched Successfully "
+        ) )
+
+});
 
 const publishAVideo = asyncHandler(async (req, res) => {
     const { title, description} = req.body
