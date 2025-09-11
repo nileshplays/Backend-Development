@@ -66,11 +66,30 @@ const publishAVideo = asyncHandler(async (req, res) => {
 const getVideoById = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: get video by id
+    // 1. Validate Video
+    if( !isValidObjectId(videoId) ){
+        throw new ApiError(400 , "Invalid Video ID !!")
+    }
+
+    // 2.Find video by Id and populate over the details
+    const video = await Video.findById(videoId)
+        .populate("owner", "username email")            // join these fields to the owner object || we can Also use Aggregate Pipeline
+
+    // 3. Check if Video exists
+    if( !video ){
+        throw new ApiError(400 , "Video Does not exists !!")
+    }
+
+    // 4. Return Response
+    return res
+     .status(200)
+     .json(new ApiResponse (200 , video , "Video fetched Successfully"))
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
+
 
 })
 
