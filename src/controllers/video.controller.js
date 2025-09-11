@@ -83,7 +83,11 @@ const publishAVideo = asyncHandler(async (req, res) => {
     }
 
     // 4. Uplaod on CLoudinary
-    const uploadedVideo = await uploadOnCloudinary(videoLocalPath)
+    const uploadedVideo = await uploadOnCloudinary(videoLocalPath , "videos")
+    // const uploadedVideo = await uploadOnCloudinary(videoLocalPath, {
+    //     resource_type: "video",
+    //     folder: "videos"
+    // });
     if( !uploadedVideo ){
         throw new ApiError(400, "Video upload Failed !!");
     }
@@ -207,7 +211,10 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if(video.videoFileId){
         await deleteFromCloudinary(video.videoFileId)
     }
-    if(video.thumbnailIdFileId){
+    // await deleteFromCloudinary(video.videoFileId, {
+    //     resource_type: "video"
+    // });
+    if(video.thumbnailId){
         await deleteFromCloudinary(video.thumbnailId)
     }
 
